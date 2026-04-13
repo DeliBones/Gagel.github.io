@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAGEL — Editor de Video & Content Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #FF6B1A;
+  --orange-light: #FF8C42;
+  --orange-glow: rgba(255,107,26,0.3);
+  --blue: #1A8FFF;
+  --blue-light: #4AAFFF;
+  --blue-glow: rgba(26,143,255,0.3);
+  --yellow: #FFD600;
+  --yellow-glow: rgba(255,214,0,0.3);
+  --bg: #0D1117;
+  --bg2: #131b27;
+  --card: #192030;
+  --text: #F0F4FF;
+  --muted: #6A7D95;
+  --border: rgba(255,255,255,0.07);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; overflow-x:hidden; cursor:none; }
+
+.cursor { width:10px; height:10px; background:var(--yellow); border-radius:50%; position:fixed; pointer-events:none; z-index:9999; mix-blend-mode:difference; }
+.cursor-ring { width:32px; height:32px; border:2px solid var(--orange); border-radius:50%; position:fixed; pointer-events:none; z-index:9998; opacity:0.6; transition:width 0.2s, height 0.2s; }
+
+.blob { position:fixed; border-radius:50%; filter:blur(100px); opacity:0.09; pointer-events:none; z-index:0; animation:blobMove 20s ease-in-out infinite alternate; }
+.blob1 { width:700px; height:700px; background:var(--orange); top:-250px; left:-200px; }
+.blob2 { width:550px; height:550px; background:var(--blue); bottom:-150px; right:-150px; animation-delay:-10s; }
+.blob3 { width:350px; height:350px; background:var(--yellow); top:35%; left:45%; animation-delay:-5s; opacity:0.06; }
+@keyframes blobMove { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(50px,35px) scale(1.1);} }
+
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  padding:1rem 3rem; display:flex; justify-content:space-between; align-items:center;
+  background:rgba(13,17,23,0.85); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-family:'Righteous',cursive; font-size:1.9rem; background:linear-gradient(135deg,var(--orange),var(--yellow)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-decoration:none; }
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a { font-size:0.78rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.nav-links a:hover { color:var(--orange); }
+.nav-cta { background:linear-gradient(135deg,var(--orange),var(--orange-light)); color:white !important; padding:0.5rem 1.4rem; border-radius:50px; font-weight:800 !important; transition:transform 0.2s,box-shadow 0.2s !important; }
+.nav-cta:hover { transform:translateY(-2px); box-shadow:0 8px 24px var(--orange-glow); }
+
+.hero { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:0; padding:8rem 0 4rem; position:relative; overflow:hidden; }
+.hero-left { padding:0 3rem 0 3rem; position:relative; z-index:2; }
+.hero-eyebrow { font-family:'Space Mono',monospace; font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--orange); margin-bottom:1.2rem; display:flex; align-items:center; gap:0.8rem; }
+.hero-eyebrow::before { content:''; width:28px; height:2px; background:var(--orange); }
+.hero-name { font-family:'Righteous',cursive; font-size:clamp(5rem,11vw,10rem); line-height:0.9; background:linear-gradient(140deg,#fff 0%,var(--yellow) 45%,var(--orange) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:fadeUp 0.7s ease both; filter:drop-shadow(0 0 60px rgba(255,180,0,0.18)); }
+.hero-tagline { font-size:1.25rem; font-weight:700; color:var(--blue-light); margin:1.2rem 0 0.5rem; line-height:1.4; animation:fadeUp 0.7s 0.1s ease both; }
+.hero-desc { font-size:0.95rem; color:var(--muted); line-height:1.8; max-width:480px; animation:fadeUp 0.7s 0.15s ease both; }
+.hero-badges { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.8rem; animation:fadeUp 0.7s 0.2s ease both; }
+.hbadge { padding:0.35rem 0.9rem; border-radius:50px; font-size:0.72rem; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; }
+.hb-yt { background:rgba(255,0,0,0.12); color:#ff6060; border:1px solid rgba(255,0,0,0.25); }
+.hb-tt { background:rgba(255,255,255,0.06); color:#ddd; border:1px solid rgba(255,255,255,0.15); }
+.hb-mc { background:rgba(91,141,62,0.12); color:#7dc44a; border:1px solid rgba(91,141,62,0.25); }
+.hb-rb { background:rgba(232,48,48,0.12); color:#ff7070; border:1px solid rgba(232,48,48,0.25); }
+.hero-cta-row { display:flex; gap:1rem; margin-top:2.5rem; flex-wrap:wrap; animation:fadeUp 0.7s 0.3s ease both; }
+.btn-primary { background:linear-gradient(135deg,var(--orange),var(--yellow)); color:#0D1117; font-weight:900; font-size:0.88rem; padding:0.85rem 2rem; border-radius:50px; text-decoration:none; border:none; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 8px 32px rgba(255,107,26,0.4); }
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 16px 48px rgba(255,107,26,0.55); }
+.btn-secondary { background:transparent; color:var(--text); font-weight:700; font-size:0.88rem; padding:0.85rem 2rem; border-radius:50px; text-decoration:none; border:2px solid var(--border); transition:all 0.2s; display:inline-flex; align-items:center; gap:0.5rem; }
+.btn-secondary:hover { border-color:var(--blue); color:var(--blue-light); background:rgba(26,143,255,0.06); }
+
+.hero-right { position:relative; height:100vh; max-height:700px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
+.hero-glow { position:absolute; bottom:-80px; left:50%; transform:translateX(-50%); width:420px; height:420px; border-radius:50%; background:radial-gradient(circle, rgba(255,107,26,0.22) 0%, rgba(255,214,0,0.1) 40%, transparent 70%); animation:pulseGlow 4s ease-in-out infinite alternate; }
+@keyframes pulseGlow { 0%{transform:translateX(-50%) scale(1);} 100%{transform:translateX(-50%) scale(1.12);} }
+.hero-char-main { position:relative; z-index:3; width:340px; bottom:0; animation:charFloat 5s ease-in-out infinite alternate; filter:drop-shadow(0 30px 60px rgba(255,107,26,0.25)); }
+@keyframes charFloat { 0%{transform:translateY(0);} 100%{transform:translateY(-18px);} }
+.deco-char { position:absolute; z-index:4; animation:decoFloat 4s ease-in-out infinite alternate; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+.dc-cry { width:130px; top:8%; right:2%; animation-delay:0s; transform:rotate(8deg); }
+.dc-stare { width:110px; top:22%; left:2%; animation-delay:1.5s; transform:rotate(-6deg); }
+.dc-burger { width:140px; bottom:28%; right:0%; animation-delay:0.8s; transform:rotate(5deg); }
+.dc-señor { width:115px; bottom:14%; left:4%; animation-delay:2s; transform:rotate(-8deg); }
+@keyframes decoFloat { 0%{transform:translateY(0) rotate(var(--rot,0deg));} 100%{transform:translateY(-14px) rotate(var(--rot,0deg));} }
+.hero-chip { position:absolute; z-index:5; background:rgba(20,26,40,0.85); backdrop-filter:blur(12px); border:1.5px solid var(--border); border-radius:14px; padding:0.5rem 0.9rem; font-size:0.72rem; font-weight:800; display:flex; align-items:center; gap:0.4rem; white-space:nowrap; animation:chipFloat 3.5s ease-in-out infinite alternate; box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.hc1 { top:10%; left:15%; border-color:rgba(255,107,26,0.4); color:var(--orange); animation-delay:0.3s; }
+.hc2 { top:42%; right:6%; border-color:rgba(26,143,255,0.4); color:var(--blue-light); animation-delay:1.1s; }
+.hc3 { bottom:32%; left:8%; border-color:rgba(255,214,0,0.4); color:var(--yellow); animation-delay:2s; }
+@keyframes chipFloat { 0%{transform:translateY(0);} 100%{transform:translateY(-10px);} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:none;} }
+
+section { padding:7rem 3rem; position:relative; z-index:1; }
+.section-header { margin-bottom:3.5rem; }
+.section-pill { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(255,107,26,0.1); border:1px solid rgba(255,107,26,0.28); color:var(--orange); font-size:0.68rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; padding:0.38rem 1rem; border-radius:50px; margin-bottom:1rem; }
+.section-title { font-family:'Righteous',cursive; font-size:clamp(2.4rem,5vw,4rem); line-height:1.02; background:linear-gradient(135deg,var(--text) 30%,var(--muted) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+#precios { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.precio-deco { position:absolute; bottom:0; right:2rem; width:160px; opacity:0.18; pointer-events:none; filter:grayscale(30%); }
+.pricing-intro { font-size:1.05rem; color:var(--muted); max-width:580px; line-height:1.75; margin-top:0.5rem; }
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.8rem; margin-top:3rem; }
+.price-card { background:var(--card); border-radius:22px; padding:2.3rem 1.8rem; border:2px solid var(--border); position:relative; overflow:hidden; transition:transform 0.3s, box-shadow 0.3s; cursor:default; }
+.price-card:hover { transform:translateY(-7px); }
+.price-card.featured { border-color:var(--orange); box-shadow:0 0 0 1px rgba(255,107,26,0.5), 0 24px 60px rgba(255,107,26,0.18); background:linear-gradient(135deg,rgba(255,107,26,0.09),var(--card)); }
+.price-card.featured:hover { box-shadow:0 0 0 1px var(--orange),0 36px 80px rgba(255,107,26,0.32); }
+.featured-badge { position:absolute; top:1.2rem; right:1.2rem; background:var(--orange); color:#fff; font-size:0.58rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; padding:0.28rem 0.7rem; border-radius:50px; }
+.price-icon { font-size:2rem; margin-bottom:0.9rem; }
+.price-label { font-size:0.66rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.4rem; }
+.price-amount { font-family:'Righteous',cursive; font-size:3.4rem; line-height:1; background:linear-gradient(135deg,var(--orange),var(--yellow)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.price-usd { font-size:0.9rem; font-weight:700; color:var(--muted); }
+.price-desc { font-size:0.85rem; color:var(--muted); margin-top:0.9rem; line-height:1.6; }
+.price-detail { margin-top:1.4rem; padding-top:1.4rem; border-top:1px solid var(--border); font-size:0.78rem; color:var(--muted); line-height:2; }
+.videos-largos-card { margin-top:2rem; padding:1.8rem 2rem; background:var(--card); border-radius:20px; border:2px solid rgba(26,143,255,0.2); display:flex; align-items:center; gap:2rem; flex-wrap:wrap; }
+.vlc-icon { font-size:2.8rem; flex-shrink:0; }
+.vlc-text h4 { font-family:'Righteous',cursive; font-size:1.3rem; color:var(--blue-light); margin-bottom:0.3rem; }
+.vlc-text p { font-size:0.88rem; color:var(--muted); line-height:1.6; }
+.payment-row { display:flex; gap:0.8rem; margin-top:2.5rem; flex-wrap:wrap; align-items:center; }
+.payment-label { font-size:0.75rem; font-weight:800; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+.pay-badge { padding:0.5rem 1.2rem; border-radius:50px; font-size:0.8rem; font-weight:800; border:2px solid var(--border); background:var(--card); display:flex; align-items:center; gap:0.4rem; }
+
+#portafolio { background:var(--bg); position:relative; overflow:hidden; }
+.port-deco { position:absolute; top:-20px; right:-10px; width:180px; opacity:0.15; pointer-events:none; transform:scaleX(-1); }
+.thumb-section { margin-bottom:3.5rem; }
+.thumb-label { font-family:'Space Mono',monospace; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); margin-bottom:1.2rem; display:flex; align-items:center; gap:0.8rem; }
+.thumb-label::after { content:''; flex:1; max-width:60px; height:1px; background:var(--orange); opacity:0.4; }
+.thumbs-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.thumb-card { border-radius:16px; overflow:hidden; border:2px solid var(--border); position:relative; transition:transform 0.3s, box-shadow 0.3s, border-color 0.3s; cursor:default; background:var(--card); }
+.thumb-card:hover { transform:translateY(-6px) scale(1.01); border-color:rgba(255,107,26,0.4); box-shadow:0 24px 60px rgba(0,0,0,0.5); }
+.thumb-card img { width:100%; display:block; }
+.thumb-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(13,17,23,0.9) 0%, transparent 55%); display:flex; flex-direction:column; justify-content:flex-end; padding:1.5rem; opacity:0; transition:opacity 0.3s; }
+.thumb-card:hover .thumb-card-overlay { opacity:1; }
+.tco-tag { font-size:0.62rem; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--orange); margin-bottom:0.3rem; }
+.tco-title { font-family:'Righteous',cursive; font-size:1.1rem; color:var(--text); }
+
+.videos-label { font-family:'Space Mono',monospace; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--blue-light); margin-bottom:1.2rem; margin-top:2.5rem; display:flex; align-items:center; gap:0.8rem; }
+.videos-label::after { content:''; flex:1; max-width:60px; height:1px; background:var(--blue-light); opacity:0.4; }
+.videos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+
+/* ══ VIDEO CARD ══ */
+.video-card { border-radius:14px; overflow:hidden; background:var(--card); border:1px solid var(--border); display:block; transition:transform 0.25s, box-shadow 0.25s, border-color 0.25s; cursor:pointer; }
+.video-card:hover { transform:translateY(-5px); box-shadow:0 16px 48px rgba(0,0,0,0.45); border-color:rgba(26,143,255,0.3); }
+.vc-thumb { aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+
+/* ── Thumbnail real via <img> ── */
+.vc-thumb-img {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  transition:transform 0.35s ease, filter 0.35s ease;
+  filter:brightness(0.82) saturate(1.1);
+}
+.video-card:hover .vc-thumb-img {
+  transform:scale(1.06);
+  filter:brightness(0.65) saturate(1.2);
+}
+
+/* bloom glow under thumbnail */
+.vc-thumb-bloom {
+  position:absolute; inset:0;
+  background:inherit;
+  filter:blur(28px) brightness(1.4) saturate(1.6);
+  transform:scale(1.1);
+  opacity:0;
+  transition:opacity 0.35s;
+  z-index:0;
+}
+.video-card:hover .vc-thumb-bloom { opacity:0.35; }
+
+.vc-thumb-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.18); transition:background 0.3s; z-index:1; }
+.video-card:hover .vc-thumb-overlay { background:rgba(0,0,0,0.08); }
+.vc-play { width:52px; height:52px; background:rgba(255,107,26,0.88); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; position:relative; z-index:2; transition:background 0.2s, transform 0.2s; box-shadow:0 4px 24px rgba(255,107,26,0.6); }
+.video-card:hover .vc-play { background:var(--orange); transform:scale(1.14); box-shadow:0 6px 32px rgba(255,107,26,0.8); }
+.vc-platform-badge { position:absolute; top:8px; left:8px; z-index:3; padding:0.25rem 0.6rem; border-radius:6px; font-size:0.6rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
+.badge-yt { background:rgba(204,0,0,0.92); color:#fff; }
+.badge-tt { background:rgba(0,0,0,0.82); color:#fff; border:1px solid rgba(255,255,255,0.25); }
+.badge-ig { background:rgba(131,58,180,0.92); color:#fff; }
+.vc-duration { position:absolute; bottom:8px; right:8px; z-index:3; background:rgba(0,0,0,0.78); color:#fff; padding:0.2rem 0.5rem; border-radius:5px; font-size:0.65rem; font-weight:700; font-family:'Space Mono',monospace; }
+.vc-info { padding:1rem 1.1rem; }
+.vc-tag { font-size:0.6rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:0.3rem; }
+.vc-title { font-size:0.85rem; font-weight:700; color:var(--text); }
+.vc-sub { font-size:0.72rem; color:var(--muted); margin-top:0.15rem; }
+
+/* ══ MODAL DE VIDEO ══ */
+.video-modal-overlay {
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(7,10,15,0.96);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.3s ease;
+  padding:1rem;
+}
+.video-modal-overlay.active { opacity:1; pointer-events:all; }
+
+.video-modal {
+  position:relative; width:90vw; max-width:920px;
+  transform:scale(0.92) translateY(20px);
+  transition:transform 0.3s ease;
+}
+.video-modal-overlay.active .video-modal { transform:scale(1) translateY(0); }
+
+.modal-close {
+  position:absolute; top:-46px; right:0;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  color:#fff; font-size:1rem; font-weight:700;
+  width:38px; height:38px; border-radius:50%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background 0.2s, border-color 0.2s; z-index:10;
+}
+.modal-close:hover { background:rgba(255,107,26,0.4); border-color:var(--orange); }
+
+.modal-video-wrap { border-radius:14px; overflow:hidden; border:2px solid rgba(255,255,255,0.08); background:#000; box-shadow:0 40px 100px rgba(0,0,0,0.85); }
+.modal-video-wrap.landscape { aspect-ratio:16/9; }
+.modal-video-wrap.portrait { max-width:380px; margin:0 auto; aspect-ratio:9/16; }
+.modal-video-wrap iframe { width:100%; height:100%; border:none; display:block; }
+
+.modal-info { margin-top:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.7rem; }
+.modal-title { font-family:'Righteous',cursive; font-size:1.1rem; color:var(--text); }
+.modal-tag { font-size:0.65rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:0.2rem; }
+.modal-ext-link { font-size:0.78rem; font-weight:700; color:var(--blue-light); text-decoration:none; border:1px solid rgba(26,143,255,0.3); padding:0.4rem 1rem; border-radius:50px; transition:all 0.2s; display:flex; align-items:center; gap:0.4rem; }
+.modal-ext-link:hover { background:rgba(26,143,255,0.1); border-color:var(--blue-light); }
+
+/* ══ SERVICIOS REDISEÑO ══ */
+#servicios { background:var(--bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.srv-deco { position:absolute; top:-30px; right:3rem; width:140px; opacity:0.13; pointer-events:none; transform:rotate(12deg) scaleX(-1); }
+.srv-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.6rem;
+  margin-top:3rem;
+}
+.srv-card {
+  background:var(--card);
+  border-radius:22px;
+  overflow:hidden;
+  border:1.5px solid var(--border);
+  transition:transform 0.35s, box-shadow 0.35s, border-color 0.35s;
+  cursor:default;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.srv-card:hover {
+  transform:translateY(-8px);
+  box-shadow:0 28px 70px rgba(0,0,0,0.5);
+  border-color:rgba(255,107,26,0.45);
+}
+/* image banner on top */
+.srv-img-wrap {
+  width:100%;
+  height:180px;
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.srv-img-wrap img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform 0.4s ease, filter 0.4s ease;
+  filter:brightness(0.7) saturate(1.2);
+}
+.srv-card:hover .srv-img-wrap img {
+  transform:scale(1.07);
+  filter:brightness(0.55) saturate(1.4);
+}
+/* colored gradient overlay on image */
+.srv-img-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, transparent 30%, var(--card) 100%);
+  z-index:1;
+}
+/* number badge top-right */
+.srv-num {
+  position:absolute;
+  top:12px;
+  right:14px;
+  z-index:3;
+  font-family:'Righteous',cursive;
+  font-size:0.75rem;
+  font-weight:700;
+  letter-spacing:0.05em;
+  background:rgba(13,17,23,0.65);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,107,26,0.35);
+  color:var(--orange);
+  padding:0.22rem 0.65rem;
+  border-radius:50px;
+}
+/* colored accent stripe */
+.srv-accent {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:3px;
+  z-index:2;
+  transition:height 0.3s;
+}
+.srv-card:hover .srv-accent { height:5px; }
+.srv-a1 { background:linear-gradient(90deg,#FF6B1A,#FFD600); }
+.srv-a2 { background:linear-gradient(90deg,#1A8FFF,#4AAFFF); }
+.srv-a3 { background:linear-gradient(90deg,#a855f7,#ec4899); }
+.srv-a4 { background:linear-gradient(90deg,#FFD600,#FF6B1A); }
+.srv-a5 { background:linear-gradient(90deg,#22d3ee,#1A8FFF); }
+.srv-a6 { background:linear-gradient(90deg,#4ade80,#22d3ee); }
+
+/* text body */
+.srv-body {
+  padding:1.4rem 1.6rem 1.7rem;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:0.55rem;
+}
+.srv-tag {
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--orange);
+  opacity:0.85;
+}
+.srv-card h3 {
+  font-family:'Righteous',cursive;
+  font-size:1.35rem;
+  color:var(--text);
+  line-height:1.15;
+  margin:0;
+}
+.srv-card p {
+  font-size:0.875rem;
+  color:var(--muted);
+  line-height:1.7;
+  margin:0;
+}
+.srv-cta-hint {
+  margin-top:auto;
+  padding-top:1rem;
+  font-size:0.72rem;
+  font-weight:700;
+  color:var(--orange);
+  opacity:0;
+  transition:opacity 0.3s;
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+}
+.srv-card:hover .srv-cta-hint { opacity:1; }
+
+/* ══ RESTO SECCIONES ══ */
+#sobre { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.sobre-deco { position:absolute; bottom:-20px; left:-15px; width:200px; opacity:0.12; pointer-events:none; transform:rotate(-5deg); }
+.about-grid { display:grid; grid-template-columns:1fr 1.2fr; gap:5rem; align-items:center; }
+.about-visual { position:relative; }
+.about-char-wrap { position:relative; display:flex; align-items:flex-end; justify-content:center; height:360px; }
+.about-char-glow { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:280px; height:280px; border-radius:50%; background:radial-gradient(circle,rgba(255,107,26,0.2) 0%,transparent 70%); }
+.about-char-main { position:relative; z-index:2; width:230px; filter:drop-shadow(0 20px 40px rgba(255,107,26,0.2)); animation:charFloat 5s ease-in-out infinite alternate; }
+.about-char-side { position:absolute; z-index:3; }
+.acs-left { width:100px; bottom:0; left:-10px; animation:decoFloat 4s ease-in-out infinite alternate; animation-delay:1s; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5)); }
+.acs-right { width:90px; bottom:0; right:-10px; animation:decoFloat 4s ease-in-out infinite alternate; animation-delay:2s; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5)); }
+.about-badge { position:absolute; top:10px; right:-10px; z-index:4; background:linear-gradient(135deg,var(--orange),var(--yellow)); color:#111; font-weight:900; font-size:0.75rem; padding:0.7rem 1.1rem; border-radius:14px; box-shadow:0 8px 28px rgba(255,107,26,0.4); }
+.about-text p { font-size:0.97rem; color:var(--muted); line-height:1.85; margin-bottom:1.2rem; }
+.about-text strong { color:var(--orange); font-weight:800; }
+.skills-chips { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:2rem; }
+.sc { padding:0.42rem 1rem; border-radius:50px; font-size:0.73rem; font-weight:700; background:var(--bg); border:1px solid var(--border); color:var(--text); transition:all 0.2s; }
+.sc:hover { border-color:var(--blue); color:var(--blue-light); }
+
+#plataformas { background:var(--bg); }
+.plat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.4rem; margin-top:3rem; }
+.plat-card { background:var(--card); border-radius:20px; padding:1.8rem 1.4rem; border:2px solid var(--border); transition:all 0.3s; cursor:default; position:relative; overflow:hidden; }
+.plat-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; transition:height 0.3s; }
+.pc-mc::after { background:linear-gradient(90deg,#4a7230,#7dc44a); }
+.pc-rb::after { background:linear-gradient(90deg,#c82020,#ff6060); }
+.pc-yt::after { background:linear-gradient(90deg,#cc0000,#ff4444); }
+.pc-tk::after { background:linear-gradient(90deg,#ff0050,#00f2ea); }
+.plat-card:hover { transform:translateY(-5px); border-color:rgba(255,255,255,0.13); }
+.plat-card:hover::after { height:5px; }
+.plat-emoji { width:52px; height:52px; object-fit:contain; margin-bottom:1rem; display:block; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+.plat-card h3 { font-family:'Righteous',cursive; font-size:1.35rem; margin-bottom:0.5rem; }
+.pc-mc h3 { color:#7dc44a; } .pc-rb h3 { color:#ff6060; } .pc-yt h3 { color:#ff5555; } .pc-tk h3 { color:var(--text); }
+.plat-card p { font-size:0.83rem; color:var(--muted); line-height:1.65; }
+
+#servicios { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.srv-deco-old { display:none; }
+
+#contacto { background:var(--bg); position:relative; overflow:hidden; }
+.contact-deco { position:absolute; bottom:0; right:3rem; width:200px; opacity:0.13; pointer-events:none; animation:charFloat 6s ease-in-out infinite alternate; }
+.contact-wrap { display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start; }
+.big-cta { font-family:'Righteous',cursive; font-size:clamp(2rem,4vw,3rem); line-height:1.1; background:linear-gradient(135deg,var(--text),var(--yellow),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:1.4rem; }
+.contact-left p { font-size:0.97rem; color:var(--muted); line-height:1.8; margin-bottom:2rem; }
+.social-links { display:flex; flex-direction:column; gap:0.7rem; }
+.slink { display:flex; align-items:center; justify-content:space-between; padding:0.95rem 1.4rem; border-radius:14px; border:2px solid var(--border); background:var(--card); text-decoration:none; color:var(--text); font-weight:700; transition:all 0.2s; }
+.slink:hover { border-color:var(--orange); background:rgba(255,107,26,0.06); color:var(--orange); }
+.slink-left { display:flex; align-items:center; gap:0.7rem; font-size:0.88rem; }
+.slink-icon { font-size:1.2rem; }
+.slink-arrow { opacity:0.45; font-size:1rem; }
+.pay-box { margin-top:2rem; padding:1.4rem 1.6rem; background:var(--card); border-radius:16px; border:2px solid rgba(255,214,0,0.18); }
+.pay-box-label { font-size:0.65rem; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:var(--yellow); margin-bottom:0.5rem; }
+.pay-box p { font-size:0.88rem; color:var(--muted); }
+.pay-box strong { color:var(--text); }
+.contact-right { display:flex; flex-direction:column; gap:0.9rem; }
+.cf-card { background:var(--card); border-radius:16px; padding:0; border:2px solid var(--border); overflow:hidden; transition:border-color 0.2s; }
+.cf-card:focus-within { border-color:rgba(255,107,26,0.4); }
+.cf-label { font-size:0.6rem; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); padding:1rem 1.4rem 0.25rem; }
+.cf-input { background:transparent; border:none; outline:none; color:var(--text); font-family:'Nunito',sans-serif; font-size:0.93rem; font-weight:600; padding:0 1.4rem 1rem; resize:none; width:100%; }
+.cf-input::placeholder { color:rgba(106,125,149,0.5); }
+.cf-textarea { min-height:110px; }
+.cf-btn { background:linear-gradient(135deg,var(--orange),var(--yellow)); color:#0D1117; border:none; padding:1.1rem 2rem; font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:900; cursor:pointer; border-radius:14px; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 8px 24px rgba(255,107,26,0.3); }
+.cf-btn:hover { transform:translateY(-2px); box-shadow:0 16px 40px rgba(255,107,26,0.45); }
+
+footer { border-top:1px solid var(--border); padding:1.8rem 3rem; display:flex; justify-content:space-between; align-items:center; background:var(--bg); position:relative; z-index:1; }
+.footer-logo { font-family:'Righteous',cursive; font-size:1.5rem; background:linear-gradient(135deg,var(--orange),var(--yellow)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
+
+.reveal { opacity:0; transform:translateY(18px); transition:opacity 0.6s ease,transform 0.6s ease; }
+.reveal.visible { opacity:1; transform:none; }
+
+@media(max-width:900px){
+  nav { padding:1rem 1.5rem; }
+  .nav-links { display:none; }
+  .hero { grid-template-columns:1fr; padding:7rem 1.5rem 3rem; }
+  .hero-right { display:none; }
+  section { padding:4rem 1.5rem; }
+  .pricing-grid,.srv-grid,.videos-grid { grid-template-columns:1fr; }
+  .thumbs-grid { grid-template-columns:1fr; }
+  .plat-grid { grid-template-columns:1fr 1fr; }
+  .about-grid,.contact-wrap { grid-template-columns:1fr; gap:3rem; }
+  footer { flex-direction:column; gap:1rem; text-align:center; }
+  .video-modal { width:96vw; }
+  .modal-video-wrap.portrait { max-width:280px; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<!-- ══ MODAL ══ -->
+<div class="video-modal-overlay" id="videoModal">
+  <div class="video-modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-video-wrap landscape" id="modalVideoWrap">
+      <iframe id="modalIframe" src="" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+    </div>
+    <div class="modal-info">
+      <div>
+        <div class="modal-tag" id="modalTag"></div>
+        <div class="modal-title" id="modalTitle"></div>
+      </div>
+      <a class="modal-ext-link" id="modalExtLink" href="#" target="_blank">Ver en plataforma ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">GAGEL</a>
+  <ul class="nav-links">
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#portafolio">Portafolio</a></li>
+    <li><a href="#sobre">Sobre mí</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#contacto" class="nav-cta">¡Contrátame!</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero" id="inicio">
+  <div class="hero-left">
+    <div class="hero-eyebrow">Editor de Video & Content Creator</div>
+    <h1 class="hero-name">GAGEL</h1>
+    <p class="hero-tagline">¿Buscas editor de video?<br>Acabas de encontrar uno. 🎬</p>
+    <p class="hero-desc">Creador de contenido gaming especializado en Minecraft & Roblox. Edición profesional para shorts, videos largos, servidores, grupos y eventos.</p>
+    <div class="hero-badges">
+      <span class="hbadge hb-yt">▶ YouTube</span>
+      <span class="hbadge hb-tt">♪ TikTok</span>
+      <span class="hbadge hb-mc">⛏ Minecraft</span>
+      <span class="hbadge hb-rb">🎮 Roblox</span>
+    </div>
+    <div class="hero-cta-row">
+      <a href="#precios" class="btn-primary">💰 Ver precios</a>
+      <a href="#portafolio" class="btn-secondary">🎬 Ver mi trabajo</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-glow"></div>
+    <img class="hero-char-main" src="imagenes/Diseno_sin_titulo_11.png" alt="Gagel">
+    <img class="deco-char dc-cry" src="imagenes/263_sin_titulo_20260323104942.png" alt="">
+    <img class="deco-char dc-stare" src="imagenes/square-image_1.png" alt="">
+    <img class="deco-char dc-burger" src="imagenes/272_sin_titulo_20260402185918.png" alt="">
+    <img class="deco-char dc-señor" src="imagenes/senor_vergon.png" alt="">
+    <div class="hero-chip hc1">⚡ Editor PRO</div>
+    <div class="hero-chip hc2">🎬 Shorts & Videos</div>
+    <div class="hero-chip hc3">🖼️ Miniaturas</div>
+  </div>
+</div>
+
+<!-- ══ PRECIOS ══ -->
+<section id="precios">
+  <img class="precio-deco" src="imagenes/senor_vergon.png" alt="">
+  <div class="section-header reveal">
+    <div class="section-pill">💰 Tarifas</div>
+    <h2 class="section-title">Precios claros,<br>calidad garantizada</h2>
+    <p class="pricing-intro">Edición profesional para tu canal. Primeras compras con precio especial para que pruebes la calidad. 🔥</p>
+  </div>
+  <div class="pricing-grid reveal">
+    <div class="price-card">
+      <div class="price-icon">✨</div>
+      <div class="price-label">Short — Primera compra</div>
+      <div class="price-amount">$10</div>
+      <div class="price-usd">USD</div>
+      <p class="price-desc">Precio especial para tu primer short. Probá la calidad sin arriesgar mucho.</p>
+      <div class="price-detail">✅ Short editado (hasta ~60s)<br>✅ Efectos & cortes dinámicos<br>✅ Optimizado YT Shorts / TikTok</div>
+    </div>
+    <div class="price-card featured">
+      <div class="featured-badge">⭐ Más popular</div>
+      <div class="price-icon">🎬</div>
+      <div class="price-label">Short — Precio normal</div>
+      <div class="price-amount">$15</div>
+      <div class="price-usd">USD</div>
+      <p class="price-desc">El precio estándar por short editado con calidad gaming de alto impacto.</p>
+      <div class="price-detail">✅ Short con tu estilo<br>✅ Motion graphics & transiciones<br>✅ Entrega rápida</div>
+    </div>
+    <div class="price-card">
+      <div class="price-icon">🔥</div>
+      <div class="price-label">Pack — Promo especial</div>
+      <div class="price-amount">$50</div>
+      <div class="price-usd">USD / 5 shorts</div>
+      <p class="price-desc">5 shorts por $50. Ahorrás $25 respecto al precio normal.</p>
+      <div class="price-detail">✅ 5 shorts completos<br>✅ Ahorrás $25 USD<br>✅ Ideal para canales en crecimiento</div>
+    </div>
+  </div>
+  <div class="videos-largos-card reveal">
+    <div class="vlc-icon">📹</div>
+    <div class="vlc-text">
+      <h4>Videos largos — precio según proyecto</h4>
+      <p>También edito videos largos para YouTube. Cada proyecto es diferente, así que el precio lo vemos juntos. Escribime por DM y lo hablamos.</p>
+    </div>
+  </div>
+  <div class="payment-row reveal">
+    <span class="payment-label">Métodos de pago:</span>
+    <span class="pay-badge">💙 Mercado Pago</span>
+    <a href="https://paypal.me/gagelsu23" target="_blank" class="pay-badge" style="text-decoration:none;color:var(--text);">💰 PayPal ↗</a>
+  </div>
+</section>
+
+<!-- ══ PORTAFOLIO ══ -->
+<section id="portafolio">
+  <img class="port-deco" src="imagenes/272_sin_titulo_20260402185918.png" alt="">
+  <div class="section-header reveal">
+    <div class="section-pill">🎬 Mi trabajo</div>
+    <h2 class="section-title">Miniaturas & Videos</h2>
+  </div>
+  <div class="thumb-section reveal">
+    <div class="thumb-label">🖼️ Miniaturas diseñadas por mí</div>
+    <div class="thumbs-grid">
+      <div class="thumb-card">
+        <img src="imagenes/maxresdefault.png" alt="Miniatura Minecraft — Misiones EP.1">
+        <div class="thumb-card-overlay">
+          <div class="tco-tag">Miniatura · Minecraft</div>
+          <div class="tco-title">Misiones EP.1 — Wither Storm</div>
+        </div>
+      </div>
+      <div class="thumb-card">
+        <img src="imagenes/imagegggg.png" alt="Miniatura ¡Todo salió mal!">
+        <div class="thumb-card-overlay">
+          <div class="tco-tag">Miniatura · Gaming</div>
+          <div class="tco-title">¡Todo salió mal!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <div class="videos-label">▶ Videos editados — clic para reproducir aquí mismo</div>
+    <div class="videos-grid">
+
+      <!-- SHORT GAMING #1 — YouTube Short w1gZ6M9Odo4 -->
+      <div class="video-card"
+           data-embed="https://www.youtube.com/embed/w1gZ6M9Odo4?autoplay=1&rel=0"
+           data-url="https://youtube.com/shorts/w1gZ6M9Odo4"
+           data-title="Short Gaming #1"
+           data-tag="Short · YouTube Shorts"
+           data-orient="portrait">
+        <div class="vc-thumb">
+          <!-- Miniatura real de YouTube (hqdefault siempre está disponible) -->
+          <img class="vc-thumb-img"
+               src="https://i.ytimg.com/vi/w1gZ6M9Odo4/hqdefault.jpg"
+               onerror="this.src='https://i.ytimg.com/vi/w1gZ6M9Odo4/mqdefault.jpg'"
+               alt="Short Gaming #1">
+          <div class="vc-thumb-overlay"></div>
+          <span class="vc-platform-badge badge-yt">YouTube</span>
+          <span class="vc-duration">Short</span>
+          <div class="vc-play">▶</div>
+        </div>
+        <div class="vc-info">
+          <div class="vc-tag">Short · YouTube Shorts</div>
+          <div class="vc-title">Short Gaming #1</div>
+          <div class="vc-sub">▶ Clic para ver aquí</div>
+        </div>
+      </div>
+
+      <!-- TIKTOK GAMING CLIP — 7542676856286219525 -->
+      <div class="video-card"
+           data-embed="https://www.tiktok.com/embed/v2/7542676856286219525"
+           data-url="https://www.tiktok.com/@7pocketg/video/7542676856286219525"
+           data-title="TikTok Gaming Clip"
+           data-tag="Short · TikTok"
+           data-orient="portrait">
+        <div class="vc-thumb">
+          <!--
+            TikTok no permite cargar sus miniaturas directamente por CORS.
+            Usamos la API oEmbed de TikTok a través de un proxy interno en JS (ver script abajo).
+            Mientras carga, se muestra un fondo de fallback.
+          -->
+          <img class="vc-thumb-img" id="tt-thumb-7542676856286219525"
+               src=""
+               alt="TikTok Gaming Clip"
+               style="display:none;">
+          <!-- Fallback gradient visible hasta que cargue la miniatura -->
+          <div class="vc-thumb-bloom" id="tt-bloom-7542676856286219525"
+               style="background:linear-gradient(135deg,#1a0a20,#6e1a8e); opacity:0.6; display:block;"></div>
+          <div class="vc-thumb-overlay"></div>
+          <span class="vc-platform-badge badge-tt">TikTok</span>
+          <span class="vc-duration">Short</span>
+          <div class="vc-play">▶</div>
+        </div>
+        <div class="vc-info">
+          <div class="vc-tag">Short · TikTok</div>
+          <div class="vc-title">TikTok Gaming Clip</div>
+          <div class="vc-sub">▶ Clic para ver aquí</div>
+        </div>
+      </div>
+
+      <!-- SHORT GAMING #2 — YouTube Short hTeKeR2RMOA -->
+      <div class="video-card"
+           data-embed="https://www.youtube.com/embed/hTeKeR2RMOA?autoplay=1&rel=0"
+           data-url="https://youtube.com/shorts/hTeKeR2RMOA"
+           data-title="Short Gaming #2"
+           data-tag="Short · YouTube Shorts"
+           data-orient="portrait">
+        <div class="vc-thumb">
+          <img class="vc-thumb-img"
+               src="https://i.ytimg.com/vi/hTeKeR2RMOA/hqdefault.jpg"
+               onerror="this.src='https://i.ytimg.com/vi/hTeKeR2RMOA/mqdefault.jpg'"
+               alt="Short Gaming #2">
+          <div class="vc-thumb-overlay"></div>
+          <span class="vc-platform-badge badge-yt">YouTube</span>
+          <span class="vc-duration">Short</span>
+          <div class="vc-play">▶</div>
+        </div>
+        <div class="vc-info">
+          <div class="vc-tag">Short · YouTube Shorts</div>
+          <div class="vc-title">Short Gaming #2</div>
+          <div class="vc-sub">▶ Clic para ver aquí</div>
+        </div>
+      </div>
+
+      <!-- VIDEO LARGO — YouTube nKRjDpTkUvc -->
+      <div class="video-card"
+           data-embed="https://www.youtube.com/embed/nKRjDpTkUvc?autoplay=1&rel=0"
+           data-url="https://youtu.be/nKRjDpTkUvc"
+           data-title="Video Gaming Completo"
+           data-tag="Video Largo · YouTube"
+           data-orient="landscape">
+        <div class="vc-thumb">
+          <img class="vc-thumb-img"
+               src="https://i.ytimg.com/vi/nKRjDpTkUvc/hqdefault.jpg"
+               onerror="this.src='https://i.ytimg.com/vi/nKRjDpTkUvc/mqdefault.jpg'"
+               alt="Video Gaming Completo">
+          <div class="vc-thumb-overlay"></div>
+          <span class="vc-platform-badge badge-yt">YouTube</span>
+          <span class="vc-duration">Video largo</span>
+          <div class="vc-play">▶</div>
+        </div>
+        <div class="vc-info">
+          <div class="vc-tag">Video Largo · YouTube</div>
+          <div class="vc-title">Video Gaming Completo</div>
+          <div class="vc-sub">▶ Clic para ver aquí</div>
+        </div>
+      </div>
+
+      <!-- INSTAGRAM -->
+      <a href="https://www.instagram.com/gagelsuontwitch/" target="_blank" class="video-card" style="text-decoration:none;">
+        <div class="vc-thumb">
+          <div class="vc-thumb-bloom" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); opacity:0.7; display:block; position:absolute; inset:0; filter:blur(0); transform:none;"></div>
+          <div class="vc-thumb-overlay" style="background:rgba(0,0,0,0.28);"></div>
+          <span class="vc-platform-badge badge-ig">Instagram</span>
+          <div class="vc-play" style="font-size:1.1rem;">📸</div>
+        </div>
+        <div class="vc-info">
+          <div class="vc-tag">Diseño · Instagram</div>
+          <div class="vc-title">Ver más trabajo</div>
+          <div class="vc-sub">↗ Ir a Instagram</div>
+        </div>
+      </a>
+
+      <!-- CTA CARD -->
+      <div class="video-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:170px;border-style:dashed;cursor:default;">
+        <div style="font-size:1.8rem;margin-bottom:0.6rem;">✉️</div>
+        <div style="font-weight:800;color:var(--orange);font-size:0.88rem;margin-bottom:0.2rem;">¿Tu proyecto aquí?</div>
+        <div style="font-size:0.75rem;color:var(--muted);">Escribime y trabajamos</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOBRE MÍ ══ -->
+<section id="sobre">
+  <img class="sobre-deco" src="imagenes/263_sin_titulo_20260323104942.png" alt="">
+  <div class="section-header reveal">
+    <div class="section-pill">👾 Quién soy</div>
+    <h2 class="section-title">Sobre mí</h2>
+  </div>
+  <div class="about-grid reveal">
+    <div class="about-visual">
+      <div class="about-char-wrap">
+        <div class="about-char-glow"></div>
+        <img class="about-char-main" src="imagenes/Diseno_sin_titulo_11.png" alt="Gagel skin MC">
+        <img class="about-char-side acs-left" src="imagenes/square-image_1.png" alt="">
+        <img class="about-char-side acs-right" src="imagenes/272_sin_titulo_20260402185918.png" alt="">
+      </div>
+      <div class="about-badge">🎬 Editor de Video & Foto</div>
+    </div>
+    <div class="about-text">
+      <p>Soy <strong>Gagel</strong>, creador de contenido gaming y editor de video con enfoque en <strong>Minecraft y Roblox</strong>. Produzco contenido para YouTube y TikTok, trabajando con servidores, grupos grandes y eventos de todo tipo.</p>
+      <p>Me especializo en <strong>edición de shorts y videos largos</strong> con un estilo dinámico y atractivo. Además diseño <strong>miniaturas (thumbnails)</strong> que generan clics — como las que ves en mi portafolio.</p>
+      <p>Si tienes un servidor, canal o evento y necesitas alguien que entienda el mundo gaming de verdad y entregue <strong>calidad real</strong>, soy tu editor.</p>
+      <div class="skills-chips">
+        <span class="sc">After Effects</span>
+        <span class="sc">Premiere Pro</span>
+        <span class="sc">Photoshop</span>
+        <span class="sc">CapCut</span>
+        <span class="sc">DaVinci Resolve</span>
+        <span class="sc">Illustrator</span>
+        <span class="sc">OBS Studio</span>
+        <span class="sc">Canva Pro</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PLATAFORMAS ══ -->
+<section id="plataformas">
+  <div class="section-header reveal">
+    <div class="section-pill">🌐 Plataformas</div>
+    <h2 class="section-title">Donde creo contenido</h2>
+  </div>
+  <div class="plat-grid reveal">
+    <div class="plat-card pc-mc"><img class="plat-emoji" src="imagenes/minecraft.webp" alt="Minecraft"><h3>Minecraft</h3><p>Mi especialidad principal. Servidores, eventos, trailers de lanzamiento y cinematics épicas.</p></div>
+    <div class="plat-card pc-rb"><img class="plat-emoji" src="imagenes/roblox.webp" alt="Roblox"><h3>Roblox</h3><p>Grupos, torneos, showcases y cobertura completa de eventos dentro de la plataforma.</p></div>
+    <div class="plat-card pc-yt"><img class="plat-emoji" src="imagenes/youtube.webp" alt="YouTube"><h3>YouTube</h3><p>Shorts y videos largos con producción de calidad profesional y ritmo de edición potente.</p></div>
+    <div class="plat-card pc-tk"><img class="plat-emoji" src="imagenes/tik tok.webp" alt="TikTok"><h3>TikTok</h3><p>Clips dinámicos, highlights virales y edición veloz orientada al engagement.</p></div>
+  </div>
+</section>
+
+<!-- ══ SERVICIOS ══ -->
+<section id="servicios">
+  <img class="srv-deco" src="imagenes/senor_vergon.png" alt="">
+  <div class="section-header reveal">
+    <div class="section-pill">🛠 Servicios</div>
+    <h2 class="section-title">Qué ofrezco</h2>
+  </div>
+  <div class="srv-grid reveal">
+
+    <!-- 01 Edición de Shorts -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1574717024453-354056afd6fc?w=600&q=80&fit=crop" alt="Edición de Shorts" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a1"></div>
+        <div class="srv-num">01</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">YouTube Shorts · TikTok</div>
+        <h3>Edición de Shorts</h3>
+        <p>Shorts dinámicos con cortes rápidos, efectos y energía gaming pura. Entrega rápida y al punto.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+    <!-- 02 Videos Largos -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1601506521937-0121a7fc2a6b?w=600&q=80&fit=crop" alt="Videos Largos" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a2"></div>
+        <div class="srv-num">02</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">YouTube · Producción</div>
+        <h3>Videos Largos</h3>
+        <p>Edición completa para YouTube — narración, efectos, color grading. Precio según proyecto.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+    <!-- 03 Miniaturas -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80&fit=crop" alt="Miniaturas" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a3"></div>
+        <div class="srv-num">03</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">Diseño · CTR</div>
+        <h3>Miniaturas (Thumbnails)</h3>
+        <p>Thumbnails llamativos y banners que generan clics. Gaming style garantizado.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+    <!-- 04 Eventos & Torneos -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80&fit=crop" alt="Eventos y Torneos" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a4"></div>
+        <div class="srv-num">04</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">Minecraft · Roblox · Gaming</div>
+        <h3>Eventos & Torneos</h3>
+        <p>Trailers, recaps y aftermovies épicos para eventos de servidores y torneos gaming.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+    <!-- 05 Contenido para Servidores -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=600&q=80&fit=crop" alt="Contenido para Servidores" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a5"></div>
+        <div class="srv-num">05</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">Servidores · Grupos</div>
+        <h3>Contenido para Servidores</h3>
+        <p>Material promocional completo para lanzamientos y crecimiento de servidores gaming.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+    <!-- 06 Pack de Contenido -->
+    <div class="srv-card">
+      <div class="srv-img-wrap">
+        <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=600&q=80&fit=crop" alt="Pack de Contenido" loading="lazy">
+        <div class="srv-img-overlay"></div>
+        <div class="srv-accent srv-a6"></div>
+        <div class="srv-num">06</div>
+      </div>
+      <div class="srv-body">
+        <div class="srv-tag">Combo · Crecimiento</div>
+        <h3>Pack de Contenido</h3>
+        <p>Combos de edición + diseño para canales que quieren crecer rápido con calidad real.</p>
+        <div class="srv-cta-hint">▶ Pedir presupuesto →</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ CONTACTO ══ -->
+<section id="contacto">
+  <img class="contact-deco" src="imagenes/Diseno_sin_titulo_11.png" alt="">
+  <div class="section-header reveal">
+    <div class="section-pill">📩 Contacto</div>
+    <h2 class="section-title">¡Hablemos!</h2>
+  </div>
+  <div class="contact-wrap reveal">
+    <div class="contact-left">
+      <div class="big-cta">DM abierto —<br>listo para trabajar 🔥</div>
+      <p>¿Tienes un servidor, canal o evento? Escribime por cualquiera de mis redes y arrancamos. Respondo rápido.</p>
+      <div class="social-links">
+        <a href="https://www.instagram.com/gagelsuontwitch/" target="_blank" class="slink"><div class="slink-left"><span class="slink-icon">📸</span> Instagram — @gagelsuontwitch</div><span class="slink-arrow">↗</span></a>
+        <a href="https://discord.gg/xrjZbd8PwQ" target="_blank" class="slink"><div class="slink-left"><span class="slink-icon">💬</span> Discord — Servidor de Gagel</div><span class="slink-arrow">↗</span></a>
+        <a href="https://www.youtube.com/@GagelMC" target="_blank" class="slink"><div class="slink-left"><span class="slink-icon">▶️</span> YouTube — @GagelMC</div><span class="slink-arrow">↗</span></a>
+        <a href="https://www.tiktok.com/@gagelsuontwitch" target="_blank" class="slink"><div class="slink-left"><span class="slink-icon">🎵</span> TikTok — @gagelsuontwitch</div><span class="slink-arrow">↗</span></a>
+        <a href="https://x.com/gagelsu233" target="_blank" class="slink"><div class="slink-left"><span class="slink-icon">🐦</span> Twitter / X — @gagelsu233</div><span class="slink-arrow">↗</span></a>
+      </div>
+      <div class="pay-box">
+        <div class="pay-box-label">💰 Métodos de pago</div>
+        <p>Acepto <strong>Mercado Pago</strong> y <a href="https://paypal.me/gagelsu23" target="_blank" style="color:var(--yellow);font-weight:800;text-decoration:none;">PayPal — paypal.me/gagelsu23</a></p>
+      </div>
+    </div>
+    <div class="contact-right">
+      <div class="cf-card"><div class="cf-label">Tu nombre / Servidor</div><input class="cf-input" type="text" placeholder="¿Cómo te llamas o cómo se llama tu servidor?"></div>
+      <div class="cf-card"><div class="cf-label">Plataforma</div><input class="cf-input" type="text" placeholder="Minecraft, Roblox, YouTube, TikTok..."></div>
+      <div class="cf-card"><div class="cf-label">¿Qué necesitas?</div><textarea class="cf-input cf-textarea" placeholder="Contame sobre tu proyecto, qué tipo de edición buscas y cuándo lo necesitas..."></textarea></div>
+      <button class="cf-btn">Enviar mensaje 🚀</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">GAGEL</div>
+  <p>© 2025 Gagel — Editor de Video & Content Creator</p>
+  <p>Minecraft · Roblox · YouTube · TikTok</p>
+</footer>
+
+<script>
+/* ══ CURSOR ══ */
+const cur=document.getElementById('cursor'), ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; cur.style.transform=`translate(${mx-5}px,${my-5}px)`; });
+(function anim(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.transform=`translate(${rx-16}px,${ry-16}px)`; requestAnimationFrame(anim); })();
+document.querySelectorAll('a,button,.price-card,.thumb-card,.video-card,.plat-card,.srv-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ ring.style.width='50px'; ring.style.height='50px'; });
+  el.addEventListener('mouseleave',()=>{ ring.style.width='32px'; ring.style.height='32px'; });
+});
+
+/* ══ REVEAL ══ */
+const obs=new IntersectionObserver(e=>{ e.forEach(x=>{ if(x.isIntersecting) x.target.classList.add('visible'); }); },{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ══ TIKTOK THUMBNAIL via oEmbed ══
+   TikTok bloquea sus imágenes por CORS si las cargamos directamente.
+   Usamos la API pública oEmbed de TikTok que devuelve una URL de miniatura. */
+(async function loadTikTokThumb() {
+  const videoId = '7542676856286219525';
+  const imgEl   = document.getElementById(`tt-thumb-${videoId}`);
+  const bloomEl = document.getElementById(`tt-bloom-${videoId}`);
+  try {
+    const url = `https://www.tiktok.com/oembed?url=https://www.tiktok.com/@7pocketg/video/${videoId}`;
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error('oEmbed fail');
+    const data = await res.json();
+    if (data.thumbnail_url) {
+      imgEl.src = data.thumbnail_url;
+      imgEl.style.display = 'block';
+      if (bloomEl) bloomEl.style.display = 'none';
+    }
+  } catch(e) {
+    /* Si falla (CORS en algunos navegadores), el degradado de fallback permanece visible */
+    console.info('TikTok thumbnail no disponible, usando fallback.');
+  }
+})();
+
+/* ══ BLOOM dinámico en hover para tarjetas con imagen real ══
+   Clona el color dominante del thumbnail como glow de fondo. */
+document.querySelectorAll('.video-card[data-embed]').forEach(card => {
+  const img = card.querySelector('.vc-thumb-img');
+  if (!img) return;
+
+  /* Crear el bloom-div si no existe */
+  let bloom = card.querySelector('.vc-thumb-bloom');
+  if (!bloom) {
+    bloom = document.createElement('div');
+    bloom.className = 'vc-thumb-bloom';
+    img.parentNode.insertBefore(bloom, img);
+  }
+
+  /* Una vez que la imagen carga, extraemos color promedio con canvas */
+  function extractColor() {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 16; canvas.height = 9;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 16, 9);
+      const d = ctx.getImageData(0,0,16,9).data;
+      let r=0,g=0,b=0,count=0;
+      for(let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; count++; }
+      r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
+      bloom.style.background = `radial-gradient(circle, rgb(${r},${g},${b}) 0%, rgba(${r},${g},${b},0.3) 60%, transparent 100%)`;
+      bloom.style.filter = 'blur(28px) brightness(1.6) saturate(1.8)';
+      bloom.style.transform = 'scale(1.15)';
+    } catch(e) {
+      /* canvas tainted por CORS: usamos fallback de color */
+    }
+  }
+
+  if (img.complete && img.naturalWidth) {
+    extractColor();
+  } else {
+    img.addEventListener('load', extractColor);
+  }
+});
+
+/* ══ MODAL ══ */
+const modal      = document.getElementById('videoModal');
+const iframe     = document.getElementById('modalIframe');
+const modalWrap  = document.getElementById('modalVideoWrap');
+const modalTitle = document.getElementById('modalTitle');
+const modalTag   = document.getElementById('modalTag');
+const modalExtLink = document.getElementById('modalExtLink');
+
+function openVideo(embedUrl, extUrl, title, tag, orient) {
+  iframe.src = embedUrl;
+  modalTitle.textContent = title;
+  modalTag.textContent   = tag;
+  modalExtLink.href      = extUrl;
+  modalWrap.className    = 'modal-video-wrap ' + (orient === 'portrait' ? 'portrait' : 'landscape');
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeVideo() {
+  modal.classList.remove('active');
+  iframe.src = '';
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.video-card[data-embed]').forEach(card => {
+  card.addEventListener('click', () => {
+    openVideo(card.dataset.embed, card.dataset.url, card.dataset.title, card.dataset.tag, card.dataset.orient);
+  });
+});
+document.getElementById('modalClose').addEventListener('click', closeVideo);
+modal.addEventListener('click', e => { if(e.target === modal) closeVideo(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeVideo(); });
+</script>
+</body>
+</html>
