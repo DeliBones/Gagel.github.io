@@ -416,6 +416,38 @@ section { padding:7rem 3rem; position:relative; z-index:1; }
 .about-text p { font-size:0.97rem; color:var(--muted); line-height:1.85; margin-bottom:1.2rem; }
 .about-text strong { color:var(--orange); font-weight:800; }
 
+/* Skills chips */
+.skills-chips { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:2rem; }
+.sc { padding:0.42rem 1rem; border-radius:50px; font-size:0.73rem; font-weight:700; background:var(--bg); border:1px solid var(--border); color:var(--text); transition:all 0.2s; }
+.sc:hover { border-color:var(--blue); color:var(--blue-light); }
+
+/* Toast notificación */
+.toast {
+  position:fixed; bottom:2rem; right:2rem; z-index:9999;
+  padding:1rem 1.5rem;
+  border-radius:14px;
+  font-weight:700; font-size:0.88rem;
+  display:flex; align-items:center; gap:0.7rem;
+  transform:translateY(100px); opacity:0;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+  pointer-events:none;
+  max-width:340px;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.success { background:linear-gradient(135deg,#0d2a1a,#0f3320); border:1.5px solid rgba(74,222,128,0.4); color:#4ade80; }
+.toast.error   { background:linear-gradient(135deg,#2a0d0d,#330f0f); border:1.5px solid rgba(252,74,74,0.4); color:#fc6a6a; }
+.toast-icon { font-size:1.2rem; flex-shrink:0; }
+
+/* Botón loading state */
+.cf-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none !important; }
+.cf-btn .btn-spinner {
+  display:inline-block; width:16px; height:16px;
+  border:2px solid rgba(0,0,0,0.3); border-top-color:#000;
+  border-radius:50%; animation:spin 0.7s linear infinite;
+  margin-right:0.4rem; vertical-align:middle;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
 /* ══ PLATAFORMAS ══ */
 #plataformas { background:var(--bg); }
 .plat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.4rem; margin-top:3rem; }
@@ -596,7 +628,7 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> Optimizado YT Shorts / TikTok</div>
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> 1 revisión incluida</div>
       </div>
-      <a href="#contacto" class="pc-btn">Empezar →</a>
+      <a href="#contacto" class="pc-btn" onclick="enviarPedido('Starter — $10 USD')">Empezar →</a>
     </div>
 
     <!-- CARD 2: Featured -->
@@ -618,7 +650,7 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> 2 revisiones incluidas</div>
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> Música & efectos de sonido</div>
       </div>
-      <a href="#contacto" class="pc-btn">¡Lo quiero! →</a>
+      <a href="#contacto" class="pc-btn" onclick="enviarPedido('Short PRO — $15 USD/short')">¡Lo quiero! →</a>
     </div>
 
     <!-- CARD 3: Pack -->
@@ -639,7 +671,7 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> Ideal para canales en crecimiento</div>
         <div class="pc-feat"><div class="pc-feat-icon">✓</div> Revisiones ilimitadas</div>
       </div>
-      <a href="#contacto" class="pc-btn">Pedir pack →</a>
+      <a href="#contacto" class="pc-btn" onclick="enviarPedido('Pack x5 — $50 USD')">Pedir pack →</a>
     </div>
   </div>
 
@@ -904,6 +936,11 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
       <p>Soy <strong>Gagel</strong>, creador de contenido gaming y editor de video con enfoque en <strong>Minecraft y Roblox</strong>. Produzco contenido para YouTube y TikTok, trabajando con servidores, grupos grandes y eventos de todo tipo.</p>
       <p>Me especializo en <strong>edición de shorts y videos largos</strong> con un estilo dinámico y atractivo. Además diseño <strong>miniaturas (thumbnails)</strong> que generan clics — como las que ves en mi portafolio.</p>
       <p>Si tienes un servidor, canal o evento y necesitas alguien que entienda el mundo gaming de verdad y entregue <strong>calidad real</strong>, soy tu editor.</p>
+      <div class="skills-chips">
+        <span class="sc">🎬 CapCut</span>
+        <span class="sc">📡 OBS Studio</span>
+        <span class="sc">🎨 Canva Pro</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1048,10 +1085,10 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
       </div>
     </div>
     <div class="contact-right">
-      <div class="cf-card"><div class="cf-label">Tu nombre / Servidor</div><input class="cf-input" type="text" placeholder="¿Cómo te llamas o cómo se llama tu servidor?"></div>
-      <div class="cf-card"><div class="cf-label">Plataforma</div><input class="cf-input" type="text" placeholder="Minecraft, Roblox, YouTube, TikTok..."></div>
-      <div class="cf-card"><div class="cf-label">¿Qué necesitas?</div><textarea class="cf-input cf-textarea" placeholder="Contame sobre tu proyecto, qué tipo de edición buscas y cuándo lo necesitas..."></textarea></div>
-      <button class="cf-btn">Enviar mensaje 🚀</button>
+      <div class="cf-card"><div class="cf-label">Tu nombre / Servidor</div><input id="cf-nombre" class="cf-input" type="text" placeholder="¿Cómo te llamas o cómo se llama tu servidor?"></div>
+      <div class="cf-card"><div class="cf-label">Plataforma</div><input id="cf-plataforma" class="cf-input" type="text" placeholder="Minecraft, Roblox, YouTube, TikTok..."></div>
+      <div class="cf-card"><div class="cf-label">¿Qué necesitas?</div><textarea id="cf-mensaje" class="cf-input cf-textarea" placeholder="Contame sobre tu proyecto, qué tipo de edición buscas y cuándo lo necesitas..."></textarea></div>
+      <button id="cf-btn" class="cf-btn" onclick="enviarPedido()">Enviar mensaje 🚀</button>
     </div>
   </div>
 </section>
@@ -1062,7 +1099,90 @@ footer p { font-size:0.72rem; color:var(--muted); font-weight:600; }
   <p>Minecraft · Roblox · YouTube · TikTok</p>
 </footer>
 
+<!-- Toast notificación -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">Mensaje enviado</span>
+</div>
+
 <script>
+/* ══ WEBHOOK ══ */
+const WEBHOOK_URL = 'https://discord.com/api/webhooks/1493457964999114783/AVjC3xSui1FfEsb7kNMBtiYnH9EfgduycSN9iZ9mhGhtxQ10QSWXlyjRJ_GghIF-5Yvj';
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const icon = document.getElementById('toast-icon');
+  const msgEl = document.getElementById('toast-msg');
+  t.className = `toast ${type}`;
+  icon.textContent = type === 'success' ? '✅' : '❌';
+  msgEl.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+async function enviarPedido(planNombre) {
+  const nombre     = document.getElementById('cf-nombre')?.value.trim();
+  const plataforma = document.getElementById('cf-plataforma')?.value.trim();
+  const mensaje    = document.getElementById('cf-mensaje')?.value.trim();
+  const btn        = document.getElementById('cf-btn');
+
+  /* Si viene de un botón de precio, hacer scroll al formulario primero */
+  if (planNombre) {
+    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+    /* Pre-llenar el campo de qué necesita si está vacío */
+    const msgField = document.getElementById('cf-mensaje');
+    if (msgField && !msgField.value) {
+      msgField.value = `Hola Gagel, me interesa el plan: ${planNombre}`;
+    }
+    return; /* Solo hace scroll, el usuario completa y envía */
+  }
+
+  /* Validación */
+  if (!nombre) { showToast('Poneme tu nombre o el de tu servidor 👀', 'error'); return; }
+  if (!mensaje) { showToast('Contame qué necesitas primero 📝', 'error'); return; }
+
+  /* Loading state */
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span> Enviando...';
+
+  const embed = {
+    embeds: [{
+      title: '📩 Nuevo pedido en GAGEL.io',
+      color: 0xFF6B1A,
+      fields: [
+        { name: '👤 Nombre / Servidor', value: nombre || '—', inline: true },
+        { name: '🎮 Plataforma',         value: plataforma || '—', inline: true },
+        { name: '📝 Mensaje',            value: mensaje || '—', inline: false },
+      ],
+      footer: { text: 'Enviado desde tu portafolio — gagel.github.io' },
+      timestamp: new Date().toISOString(),
+      thumbnail: { url: 'https://i.imgur.com/wSTFkRM.png' }
+    }]
+  };
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(embed)
+    });
+
+    if (res.ok) {
+      showToast('¡Pedido enviado a Discord! Te respondo pronto 🔥', 'success');
+      document.getElementById('cf-nombre').value     = '';
+      document.getElementById('cf-plataforma').value = '';
+      document.getElementById('cf-mensaje').value    = '';
+    } else {
+      showToast('Error al enviar, escribime directo por Discord 💬', 'error');
+    }
+  } catch (e) {
+    showToast('Error de red, escribime directo por Discord 💬', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Enviar mensaje 🚀';
+  }
+}
+
 /* ══ CURSOR ══ */
 const cur=document.getElementById('cursor'), ring=document.getElementById('cursorRing');
 let mx=0,my=0,rx=0,ry=0;
